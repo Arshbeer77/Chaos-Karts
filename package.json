@@ -1,0 +1,10 @@
+{
+  "name": "chaos-karts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lightweight low-poly multiplayer browser kart racer",
+  "scripts": {"start": "node server.js", "dev": "node --watch server.js", "test": "node --test tests/*.test.js"},
+  "engines": {"node": ">=22"},
+  "dependencies": {"three": "0.180.0", "ws": "8.18.3"}
+}
