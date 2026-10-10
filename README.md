@@ -26,6 +26,12 @@ Do not select a paid instance or add a paid database; this prototype does not ne
 
 Rooms live in memory, so restarts and redeploys end active rooms. This app uses one server instance: do not scale it horizontally without adding shared room routing/state. Static-only hosts such as GitHub Pages cannot run this WebSocket server.
 
+### Cloudflare compatibility
+
+Cloudflare can host this kind of game using Workers Static Assets for the client and a SQLite-backed Durable Object per room for WebSockets and race simulation. **This repository currently uses a Node server, so it is not yet deployable as a Cloudflare Worker.** It needs a room-server adapter and a Wrangler configuration; uploading only `public/` to Cloudflare Pages will not enable online multiplayer.
+
+As checked on October 10, 2026, the Durable Objects Free plan includes 100,000 requests/day and 13,000 GB-s/day of compute duration. Incoming WebSocket messages use a 20:1 request billing ratio; outgoing messages are not charged. A continuously ticking race consumes active duration, even if little CPU is used. Idle lobbies should use WebSocket hibernation after adaptation. Free-plan limit exhaustion returns errors rather than automatically charging for overages. See https://developers.cloudflare.com/durable-objects/platform/pricing/.
+
 ## Included
 
 - Two 3D circuits: **Sunset Bay** and **Canyon Run**, three laps each.
@@ -49,7 +55,7 @@ Rooms live in memory, so restarts and redeploys end active rooms. This app uses 
 | Use item | Space | Tap item slot |
 | Reset to road | R, solo only | Road edge automatically contains kart |
 
-Charge a drift for at least 0.65 seconds, then release for a mini boost. Landscape orientation is recommended on phones. Sound is opt-in.
+Charge a drift for at least 0.65 seconds, then release for a mini boost. Landscape orientation is recommended on phones. Sound is opt-in. The How to Play dialog also lets you enable or disable touch controls manually on hybrid devices.
 
 ## Verification
 
@@ -68,7 +74,7 @@ Tests cover bot completion of both circuits, lap gating, drift boost, grass slow
 - `public/style.css`: responsive main menu, lobby and race HUD.
 - `tests/`: Node test runner checks; no additional test dependencies.
 
-The game uses only Three.js and `ws`. Scenery uses GPU instancing, low-poly geometry, capped pixel density, no realtime shadow maps, and no downloaded textures/models. Fonts load from Google Fonts with system fallbacks. There is no bundler or build step.
+The game uses only Three.js and `ws`. Scenery uses GPU instancing, low-poly geometry, capped pixel density, no realtime shadow maps, and no downloaded textures/models. The server compresses assets with gzip. Fonts load from Google Fonts with system fallbacks. There is no bundler or build step.
 
 ## Prototype limitations
 

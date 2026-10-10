@@ -3,13 +3,14 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {randomBytes} from 'node:crypto';
+import {gzipSync} from 'node:zlib';
 import {WebSocketServer} from 'ws';
 import {COLORS,spawnPlayer,createRace,stepRace} from './public/shared.js';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 export function createGameServer(){
-  const rooms=new Map();
+  const rooms=new Map(),assetCache=new Map();
   const server=http.createServer(async(req,res)=>{
     if(req.url==='/health'){res.writeHead(200,{'Content-Type':'application/json'});return res.end('{"status":"ok"}');}
     try{
@@ -18,7 +19,10 @@ export function createGameServer(){
       const relative=files[url.pathname]||'public'+(url.pathname==='/'?'/index.html':decodeURIComponent(url.pathname));
       const filename=path.resolve(root,relative);
       if(!filename.startsWith(path.join(root,'public')+path.sep)&&!Object.values(files).some(f=>path.resolve(root,f)===filename))throw Error('Forbidden');
-      const data=await readFile(filename);res.writeHead(200,{'Content-Type':mime[path.extname(filename)]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache'});res.end(data);
+      let asset=process.env.NODE_ENV==='production'&&assetCache.get(filename);
+      if(!asset){const raw=await readFile(filename);asset={raw,gzip:gzipSync(raw)};if(process.env.NODE_ENV==='production')assetCache.set(filename,asset);}
+      const compressed=/\bgzip\b/.test(req.headers['accept-encoding']||'');
+      res.writeHead(200,{'Content-Type':mime[path.extname(filename)]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache','Vary':'Accept-Encoding',...(compressed?{'Content-Encoding':'gzip'}:{})});res.end(compressed?asset.gzip:asset.raw);
     }catch{res.writeHead(404);res.end('Not found');}
   });
   const wss=new WebSocketServer({server,path:'/ws',maxPayload:2048});

@@ -31,7 +31,7 @@ export function makeScene(canvas){
     const start=path[0],startGroup=new THREE.Group();startGroup.position.set(start.x,0,start.z);startGroup.rotation.y=start.angle;world.add(startGroup);
     for(let x=0;x<10;x++)for(let z=0;z<2;z++)box((x+z)%2?0x263b35:0xf6f2e7,(x-4.5)*t.width/10,.12,z*.8,t.width/10,.05,.8,startGroup);
     for(const s of [-1,1])box(0x173b32,s*(t.width/2+1),4.1,0,.6,8.2,.6,startGroup);
-    box(0xf1cc6a,0,8.2,0,t.width+3,1.8,.8,startGroup);label('CHAOS KARTS',start.x,8.2,start.z+.45,start.angle,'#f1cc6a','#173b32',t.width+2,1.65);
+    box(0xf1cc6a,0,8.2,0,t.width+3,1.8,.8,startGroup);label('CHAOS KARTS',start.x-Math.sin(start.angle)*.45,8.2,start.z-Math.cos(start.angle)*.45,start.angle+Math.PI,'#f1cc6a','#173b32',t.width+2,1.65);
     let seed=729+id;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
     for(let i=0;i<150;i++){const x=(rand()-.5)*275,z=(rand()-.5)*240;if(Math.hypot(x/1.17,z)>119||nearest(path,x,z).d<t.width/2+6||Math.hypot(x,z)<12)continue;const size=1.5+rand()*2.8;
       if(!id){box(0x816447,x,size*.7,z,.6,size*1.4,.6);mesh(coneGeo,i%3?0x43826b:0x6f9a67,x,size*1.8,z,size,size*2.6,size);mesh(coneGeo,0x75a477,x,size*2.7,z,size*.75,size*1.8,size*.75);}
